@@ -23,6 +23,7 @@ public class FacebookConsole {
     FriendService friendService;
     User currentUser;
 
+
     public FacebookConsole() {
 
         this.scanner = new Scanner(System.in);
@@ -31,6 +32,7 @@ public class FacebookConsole {
         this.commentService = new CommentServiceImpl();
         this.likeService = new LikeServiceImpl();
         this.friendService = new FriendServiceImpl();
+
     }
 
     public void run() {
@@ -73,7 +75,6 @@ public class FacebookConsole {
         System.out.println("WELCOME " + currentUser.getUsername());
 
         int choice = 0;
-
 
         do {
 
@@ -151,7 +152,6 @@ public class FacebookConsole {
                     }
 
                     case 12: {
-
                         break;
                     }
                 }
@@ -175,26 +175,23 @@ public class FacebookConsole {
         if (friends.size() > 0) {
 
             System.out.println("FRIENDS LIST ");
+
             System.out.println("******************************");
 
-            for (User user : friends) {
-                System.out.println(user.getUserId() + "=>" + user.getUsername());
-            }
-
-            System.out.println();
+            showUsers(friends);
 
         } else {
-
             System.out.println("YOU DON't HAVE ANY FRIENDS YET..");
         }
-
 
     }
 
     private void showUserInfo() {
 
         System.out.println("USER INFORMATION \n");
+
         System.out.println(currentUser);
+
     }
 
     public void login() {
@@ -211,7 +208,6 @@ public class FacebookConsole {
 
         if (currentUser != null) {
             runMain();
-
         } else {
             System.out.println("LOGIN FAILED.. ");
         }
@@ -264,28 +260,12 @@ public class FacebookConsole {
         List<Post> posts = postService.getNewsFeedPosts(currentUser.getUserId());
 
         System.out.println("*****************************************");
+
         System.out.println("FACEBOOK ");
+
         System.out.println("*****************************************");
 
-
-        for (Post post : posts) {
-
-
-            User postUser = userService.getUserInfo(post.getUserId());
-
-            System.out.println(postUser.getUsername() + " POSTED AT " + post.getDateTime() + " => " + post.getContent() + "\n");
-
-            List<Comment> postComments = commentService.getPostComments(post.getId());
-
-            for (Comment comment : postComments) {
-
-                User commentMaker = userService.getUserInfo(comment.getUserId());
-                System.out.println("\t " + commentMaker.getUsername() + " COMMENTED AT" + comment.getDateTime() + " => " + comment.getContent());
-            }
-
-            System.out.println();
-        }
-
+        showPostsWithComments(posts);
 
     }
 
@@ -293,12 +273,14 @@ public class FacebookConsole {
     private void postStatus() {
 
         System.out.println("ENTER STATUS: ");
+
         String status = scanner.nextLine();
+
         String datetime = new SimpleDateFormat("YYYY-MM-dd hh:mm:ss").format(new Date());
+
         System.out.println(datetime);
 
         postService.createNewPost(currentUser.getUserId(), 1, status, datetime);
-
 
     }
 
@@ -306,12 +288,7 @@ public class FacebookConsole {
 
         List<Post> posts = postService.getUserPosts(currentUser.getUserId());
 
-        for (Post post : posts) {
-
-            User postUser = userService.getUserInfo(post.getUserId());
-
-            System.out.println(post.getId() + "# " + postUser.getUsername() + " AT " + post.getDateTime() + " => " + post.getContent() + "\n");
-        }
+        showPosts(posts);
 
         System.out.println("SELECT STATUS ID TO REMOVE ..");
 
@@ -325,12 +302,7 @@ public class FacebookConsole {
 
         List<Post> posts = postService.getNewsFeedPosts(currentUser.getUserId());
 
-        for (Post post : posts) {
-
-            User postUser = userService.getUserInfo(post.getUserId());
-
-            System.out.println(post.getId() + "# " + postUser.getUsername() + " AT " + post.getDateTime() + " => " + post.getContent() + "\n");
-        }
+        showPosts(posts);
 
         System.out.println("SELECT STATUS ID TO COMMENT ON ..");
 
@@ -352,10 +324,7 @@ public class FacebookConsole {
 
         if (userComments.size() > 0) {
 
-            for (Comment comment : userComments) {
-
-                System.out.println(comment.getId() + "# " + comment.getContent() + "\n");
-            }
+            showComments(userComments);
 
             System.out.println("SELECT YOUR COMMENT ID TO REMOVE ..");
 
@@ -380,7 +349,7 @@ public class FacebookConsole {
 
         System.out.println(currentUser);
 
-        System.out.println("EDIT/UPDATE USER INFO\n");
+        System.out.println("EDIT/UPDATE USER INFO \n");
 
         System.out.println("ENTER USERNAME: ");
         username = scanner.nextLine();
@@ -426,10 +395,7 @@ public class FacebookConsole {
 
         if (notFriendUsers.size() > 0) {
 
-            for (User user : notFriendUsers) {
-
-                System.out.println(user.getUserId() + "=>" + user.getUsername());
-            }
+            showUsers(notFriendUsers);
 
             System.out.println("ENTER USER_ID TO FRIEND..");
 
@@ -439,6 +405,7 @@ public class FacebookConsole {
 
             System.out.println(currentUser.getUsername() + " AND " +
                     userService.getUserInfo(friendId).getUsername() + " ARE NOW FRIENDS");
+
         } else {
 
             System.out.println("NO USERS TO BE FRIENDS WITH!!");
@@ -453,22 +420,67 @@ public class FacebookConsole {
 
         if (friends.size() > 0) {
 
-            for (User user : friends) {
-                System.out.println(user.getUserId() + "=>" + user.getUsername());
-            }
+            showUsers(friends);
 
             System.out.println("ENTER FRIEND ID YOU WANT TO REMOVE: ");
 
             int friendId = Integer.parseInt(scanner.nextLine());
+
             friendService.removeFriend(currentUser.getUserId(), friendId);
 
             System.out.println(currentUser.getUsername() + " AND " +
-                    userService.getUserInfo(friendId).getUsername() + " ARE NO LONGER FRIENDS");
+                    userService.getUserInfo(friendId).getUsername() +
+                    " ARE NO LONGER FRIENDS");
+
         } else {
 
             System.out.println("YOU DON't HAVE ANY FRIENDS!");
         }
     }
+
+    private void showUsers(List<User> users){
+
+        for (User user : users) {
+
+            System.out.println(user.getUserId() + "=>" + user.getUsername());
+        }
+    }
+
+    private void showPosts(List<Post> posts){
+
+        for (Post post : posts) {
+
+            User postUser = userService.getUserInfo(post.getUserId());
+
+            System.out.println(post.getId() + "# " + postUser.getUsername() + " AT " + post.getDateTime() + " => " + post.getContent() + "\n");
+        }
+    }
+
+    private void showPostsWithComments(List<Post> posts){
+
+        for (Post post : posts) {
+
+            User postUser = userService.getUserInfo(post.getUserId());
+
+            System.out.println(postUser.getUsername() + " POSTED AT " + post.getDateTime() + " => " + post.getContent() + "\n");
+
+            List<Comment> postComments = commentService.getPostComments(post.getId());
+
+            showComments(postComments);
+        }
+
+    }
+
+    private void showComments(List<Comment> comments){
+
+        for (Comment comment : comments) {
+
+            User commentMaker = userService.getUserInfo(comment.getUserId());
+            System.out.println("\t " + commentMaker.getUsername() + " COMMENTED AT" + comment.getDateTime() + " => " + comment.getContent());
+        }
+        System.out.println();
+    }
+
 
 
 }
